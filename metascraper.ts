@@ -1,4 +1,21 @@
 /**
+ *
+ * @type {function(string, Document): string | null}
+ * @param {name} string
+ * @param {doc} Document
+ * @returns {string | null}
+ */
+
+const getMeta = (name: string, doc: Document): string | null => {
+  let tag = doc.querySelector(`meta[name='${name}']`);
+  if (tag) return tag.getAttribute("content");
+  tag = doc.querySelector(`meta[property='${name}']`);
+  if (tag) return tag.getAttribute("content");
+  return null;
+};
+
+/**
+ *
  * @type {function(string): Promise<{ [index: string]: string | number }> | null}
  * @param {string} url
  * @returns {Promise<{ [index: string]: string | number }> | null}
@@ -8,8 +25,7 @@ export default async (
 ): Promise<{ [index: string]: string | number } | null> => {
   url = url.trim();
   if (!url) {
-    console.log("URL is empty");
-    return null;
+    throw "URL is empty";
   }
 
   const siteData = await fetch(url, {
@@ -19,9 +35,9 @@ export default async (
     referrerPolicy: "no-referrer",
   });
 
-  if (!siteData.ok) return null;
+  if (!siteData.ok) throw "Site error";
 
-  let data: { [index: string]: string | number } = {};
+  const data: { [index: string]: string | number } = {};
 
   if (siteData.headers.get("content-type")?.includes("text/html")) {
     const html: string = await siteData.text();
@@ -186,12 +202,4 @@ export default async (
 
   // console.log(data);
   return data;
-};
-
-const getMeta = (name: string, doc: Document): string | null => {
-  let a = doc.querySelector(`meta[name='${name}']`);
-  if (a) return a.getAttribute("content");
-  a = doc.querySelector(`meta[property='${name}']`);
-  if (a) return a.getAttribute("content");
-  return null;
 };
